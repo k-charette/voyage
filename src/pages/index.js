@@ -1,24 +1,43 @@
 import React from 'react'
 import { useQuery, gql } from '@apollo/client';
 
-export default function Index() {
+const Index = () => {
     const {data, loading, error} = useQuery(gql`
         {
             country(code: "JP"){
-            name 
+                name 
+                capital
+                languages{
+                    name
+                    native
+                }
             }
         }
     `)
 
-    if (loading) return <div> Loading now..</div>
-    
+    if (loading) return <div> Loading now..</div>    
     if (error) {
         return(
-            <div>{error.message}</div>
+            <>
+                <div>Error: </div>
+                <div> {error.message}</div>
+            </>
         )    
     }
 
+    const { name, capital, languages } = data.country
     return (
-        <div> {JSON.stringify(data)} </div>
+        <div> 
+            <h1> {name}</h1>
+            <p> Capital - {capital}</p>
+            <p>Languages: </p>
+            <ul>
+                {languages.map(language => (
+                    <li key={language.code}>{language.name}</li>
+                ))}
+            </ul>
+        </div>
     )
 }
+
+export default Index
