@@ -8,14 +8,20 @@
     "@emotion/core": "^10.0.28",
     "@emotion/styled": "^10.0.27",
     "apollo-server-lambda": "^2.12.0",
+    "basic-auth": "^2.0.1",
+    "bcryptjs": "^2.4.3",
     "emotion-theming": "^10.0.27",
     "gatsby": "^2.20.29",
     "gatsby-plugin-chakra-ui": "^0.1.4",
     "gatsby-plugin-react-helmet": "^3.2.4",
     "graphql": "^15.0.0",
     "isomorphic-fetch": "^2.2.1",
+    "jsonwebtoken": "^8.5.1",
+    "pg": "^8.0.3",
+    "pg-hstore": "^2.3.3",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-helmet": "^6.0.0"
+    "react-helmet": "^6.0.0",
+    "sequelize": "^5.21.7"
   }
 }
