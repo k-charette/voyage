@@ -7,7 +7,15 @@ const client = new ApolloClient({
   link: new HttpLink({
     fetch,
     uri: "/.netlify/functions/graphql",
-  })
+  }),
+  resolvers: {
+    Query: {
+      isLoggedIn() {
+        const token = localStorage.getItem('voyage:token')
+        return Boolean(token)
+      },
+    },
+  },
 });
 
 export const wrapRootElement = ({ element }) => {

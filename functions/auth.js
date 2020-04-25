@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize')
 const bcrypt = require('bcryptjs')
 const basicAuth = require('basic-auth')
+const jwt = require('jsonwebtoken')
 
 const sequelize = new Sequelize(process.env.DB_CONNECTION_STRING, {
     dialectOptions: {
@@ -32,10 +33,6 @@ exports.handler = async (event) => {
         // })
 
         // const count = await User.count()
-
-        // const count = await User.count()
-        
-        // TODO: authenticate our users
         const { name, pass } = basicAuth(event)
         const user = await User.findOne({
             where: {
@@ -46,14 +43,15 @@ exports.handler = async (event) => {
             })
                     
             if (user) {
-                //TODO: compare passwords
-                const passwordsMatch = await bcrypt.compare(
-                        pass, user.password
-                    )
+                const passwordsMatch = await bcrypt.compare(pass, user.password)
                     if (passwordsMatch) {
+                        const token = jwt.sign({
+                            id: user.id,
+                            email: user.email
+                        }, process.env.JWT_SECRET)
                         return {
                             statusCode: 200,
-                            body: 'This will be a Json Web Token'
+                            body: token
                         }
                     }
                 }
