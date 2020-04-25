@@ -5,65 +5,84 @@ const typeDefs = gql`
     listings: [Listing!]!
   }
 
+  type Mutation {
+    createListing(input: CreateListingInput!): Listing!
+  }
+
+  input CreateListingInput {
+    title: String
+    description: String
+    url: String!
+    notes: String
+  }
+
   type Listing {
-      id: ID!
-      title: String!
-      description: String!
-      url: String!
-      company: Company!
-      note: String
-      contact: [Contact!]!
+    id: ID!
+    title: String
+    description: String
+    url: String!
+    company: Company
+    notes: String
+    contact: [Contact!]!
   }
 
   type Company {
-      id: ID!
-      name: String!
-      logo: String
-      listings: [Listing!]!
-      url: String
+    id: ID!
+    name: String!
+    logo: String
+    listings: [Listing!]!
+    url: String
   }
 
   type Contact {
-      id: ID!
-      name: String!
-      email: String
-      note: String
+    id: ID!
+    name: String!
+    email: String
+    notes: String
   }
 `;
+
+const mockData = [
+  {
+      id: 1,
+      title: 'Software Developer',
+      description: 'Looking for a developer to develop things',
+      url: 'https://www.giveitago.com/jobs/software-developer',
+      company: {
+          id: 1,
+          name: 'Give it a Go',
+          url: 'https://www.giveitago.com',
+          listing: [],
+      },
+      contact: []
+  },
+  {
+      id: 2,
+      title: 'Software Avocado',
+      description: 'Looking for a developer to develop avocados',
+      url: 'https://www.giveitago.com/jobs/avocado-developer',
+      company: {
+          id: 1,
+          name: 'Give it a Go',
+          url: 'https://www.giveitago.com',
+          listing: [],
+      },
+      contact: []
+  }
+]
 
 const resolvers = {
   Query: {
     listings(){
-        return [
-            {
-                id: 1,
-                title: 'Software Developer',
-                description: 'Looking for a developer to develop things',
-                url: 'https://www.giveitago.com/jobs/software-developer',
-                company: {
-                    id: 1,
-                    name: 'Give it a Go',
-                    url: 'https://www.giveitago.com',
-                    listing: [],
-                },
-                contact: []
-            },
-            {
-                id: 2,
-                title: 'Software Avocado',
-                description: 'Looking for a developer to develop avocados',
-                url: 'https://www.giveitago.com/jobs/avocado-developer',
-                company: {
-                    id: 1,
-                    name: 'Give it a Go',
-                    url: 'https://www.giveitago.com',
-                    listing: [],
-                },
-                contact: []
-            }
-        ]
+        return mockData
     }
-  }
+  },
+  Mutation: {
+    createListing(_, params, context){
+      console.log(params)
+      return {...mockData[0], ...params.input, id: 3}
+    }
+  },
 };
 
 const server = new ApolloServer({

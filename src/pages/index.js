@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { useQuery, gql, useApolloClient } from '@apollo/client'
-import { Heading, Box, Text, Link, Input, Button, Flex, Stack } from '@chakra-ui/core'
+import { useQuery, gql, useApolloClient, useMutation } from '@apollo/client'
+import { Heading, Box, Text, Link, Input, Button, Flex, Stack, Textarea } from '@chakra-ui/core'
 import { Helmet }  from 'react-helmet'
 import { graphql, useStaticQuery } from 'gatsby'
 
@@ -10,23 +10,35 @@ const LOGGED_IN_QUERY = gql`
 }
 `
 
-const JobListings = () => {
-    const {data, loading, error, client} = useQuery(gql`
-        {
-            listings {
-                id
-                title
-                description
-                url
-                company {
-                    id
-                    name
-                    url
-                }
-            }
-        }  
-    `)
+const LISTING_FRAGMENT = gql`
+    fragment ListingFragment on Listing {
+        id
+        url
+        title
+        description
+        notes
+    }
+`
+const CREATE_LISTING = gql`
+    mutation CreateListing($input: CreateListingInput!){
+        createListing(input: $input){
+            ...ListingFragment
+        }
+    }
+    ${LISTING_FRAGMENT}
+`
 
+const JOB_LISTINGS = gql`
+    {
+        listings {
+            ...ListingFragment
+        }
+    }
+    ${LISTING_FRAGMENT}
+`
+
+const JobListings = () => {
+    const {data, loading, error, client} = useQuery(JOB_LISTINGS)
     if (loading) return <div> Loading now..</div>    
     if (error) {
         return(
@@ -39,21 +51,12 @@ const JobListings = () => {
 
     return (
         <>
-            {data.listings.map(listing => (  
+            {data.listings.map((listing) => (  
                 <Box key={listing.id} p='4'> 
                     <Heading mb='2'>
-                        <Link href={listing.url}>{listing.title}</Link>
+                        <Link href={listing.url}>{listing.title || 'New Listing'}</Link>
                     </Heading>
-                    <Text>
-                        {
-                            listing.company.url ? ( 
-                                <Link href={listing.company.url}>{listing.company.name}</Link>
-                            ) : (
-                                listing.company.name
-                            )
-                        }
-                    </Text>
-                    <Text>{listing.description}</Text>
+                    {listing.description && <Text>{listing.description}</Text>}
                 </Box>
             ))}
         </>
@@ -106,6 +109,46 @@ const LoginForm = () => {
     )
 }
 
+const CreateJobListing = () => {
+    const [createListing, {loading, error, data}] = useMutation(CREATE_LISTING)
+    const handleSubmit = (event) => {
+        event.preventDefault()
+
+        const {title, description, url, notes} = event.target
+        const input = {
+            title: title.value,
+            description: description.value,
+            url: url.value,
+            notes: notes.value,
+        }
+
+        createListing({
+            variables: {input}, 
+            update: (cache, { data }) => {
+                const { listings } = cache.readQuery({query: JOB_LISTINGS })
+                cache.writeQuery({
+                    query: JOB_LISTINGS,
+                    data: {
+                        listings: [...listings, data.createListing],
+                    },
+                })
+            }
+        })
+    }
+    return (
+        <Box maxW='480px' w='full' mt='8' mx='4'>
+            <Heading mb='4' fontSize='md'>Create New Job Listing</Heading>
+            <Stack as='form' onSubmit={handleSubmit}>
+                <Input placeholder='Job Title' type='title' name='title'/>
+                <Input placeholder='Job Description' type='description' name='description'/>
+                <Input isRequired placeholder='Listing URL' type='url' name='url'/>
+                <Textarea placeholder='Notes' name='notes'/>
+                <Button mr='auto' mt='2' type='submit' isLoading={false}>Create Job Listing</Button>
+            </Stack>
+        </Box>
+    )
+}
+
 const Index = () => {
     const {data, loading, error, client } = useQuery(LOGGED_IN_QUERY)
     const { site } = useStaticQuery(graphql`
@@ -128,14 +171,17 @@ const Index = () => {
            
             {isLoggedIn ? (
         <>
-            <Box as='header' px='6' py='2' bg='blue.200'>
-                {title}
-            </Box>
-            <Button onClick={() => {
-                localStorage.removeItem('voyage:token')
-                client.resetStore()
-                }}>Logout
+            <Flex as='header' justify='space-between' align='center' px='4' bg='blue.200' h='12'>
+                <Heading fontSize='lg'> 
+                    {title}
+                </Heading>
+                <Button onClick={() => {
+                    localStorage.removeItem('voyage:token')
+                    client.resetStore()
+                    }}>Logout
                 </Button>
+            </Flex>
+                <CreateJobListing />
                 <JobListings /> 
             </>
             ) : (
