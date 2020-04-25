@@ -1,4 +1,5 @@
- const { ApolloServer, gql } = require("apollo-server-lambda");
+const { ApolloServer, gql } = require("apollo-server-lambda")
+const { sequelize, Listing } = require('../models')
 
 const typeDefs = gql`
   type Query {
@@ -42,45 +43,15 @@ const typeDefs = gql`
   }
 `;
 
-const mockData = [
-  {
-      id: 1,
-      title: 'Software Developer',
-      description: 'Looking for a developer to develop things',
-      url: 'https://www.giveitago.com/jobs/software-developer',
-      company: {
-          id: 1,
-          name: 'Give it a Go',
-          url: 'https://www.giveitago.com',
-          listing: [],
-      },
-      contact: []
-  },
-  {
-      id: 2,
-      title: 'Software Avocado',
-      description: 'Looking for a developer to develop avocados',
-      url: 'https://www.giveitago.com/jobs/avocado-developer',
-      company: {
-          id: 1,
-          name: 'Give it a Go',
-          url: 'https://www.giveitago.com',
-          listing: [],
-      },
-      contact: []
-  }
-]
-
 const resolvers = {
   Query: {
     listings(){
-        return mockData
+        return Listing.findAll()
     }
   },
   Mutation: {
-    createListing(_, params, context){
-      console.log(params)
-      return {...mockData[0], ...params.input, id: 3}
+    createListing(_, {input}) {
+      return Listing.create(input)
     }
   },
 };
