@@ -2,7 +2,7 @@ const Sequelize = require('sequelize')
 const bcrypt = require('bcryptjs')
 const basicAuth = require('basic-auth')
 const jwt = require('jsonwebtoken')
-const { sequelize, User, Listing } = require('../models')
+const { sequelize, User  } = require('../models')
 
     // await sequelize.sync({force: true})
 

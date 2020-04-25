@@ -31,6 +31,9 @@ Listing.init(
         modelName: 'listing',
     }
 );
+    
+User.hasMany(Listing)
+Listing.belongsTo(User)
 
 exports.sequelize = sequelize
 exports.User = User
